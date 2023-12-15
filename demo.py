@@ -47,8 +47,11 @@ def hash_message(message: bytes) -> SHA256.SHA256Hash:
 
 @dataclass
 class Metadata:
+    """ Data about the document """
+
     author_id: str
     author_name: str
+    organization: str
     timestamp: float
     location: str
     title: str
@@ -62,13 +65,13 @@ class Metadata:
 
 @dataclass
 class Author:
+    """ A class representing an author """
 
     name: str
     id: str
 
 
-
-class Provider:
+class IDProvider:
     """ Generic digital identification provider """
 
     def __init__(self):
@@ -134,7 +137,7 @@ class Provider:
 
 if __name__ == '__main__':
     
-    provider = Provider()
+    provider = IDProvider()
 
     # Author creates an account with the provider
     author_name = 'Alice'
@@ -148,6 +151,7 @@ if __name__ == '__main__':
     metadata = Metadata(
         author_id=author.id,
         author_name=author.name,
+        organization='My Organization',
         timestamp=time.time(),
         location='Milan, Italy',
         title='My Book',
@@ -186,6 +190,7 @@ if __name__ == '__main__':
     altered_metadata = Metadata(
         author_id=author.id,
         author_name=author.name,
+        organization='My Organization',
         timestamp=time.time(),
         location='Milan, Italy',
         title='My Book',
