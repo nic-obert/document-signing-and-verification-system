@@ -1,10 +1,10 @@
 # Document Signing and Verification System
 
-This project aims to create a protocol for signing documents using RSA encryption. This barebone Python demo shows the technical signing and verification parts of the protocol.
+This project aims to create a protocol for signing documents using RSA cryptography. This barebone Python demo shows the technical signing and verification parts of the protocol.
 
 ## Objectives
 
-- Sign and verify a document using RSA encryption
+- Sign and verify a document using RSA cryptography
 - Include metadata in the signature to provide untampered information about the document (author, date, license, etc.)
 
 ## The signing and verification system
