@@ -107,32 +107,40 @@ class IDProvider:
         return public_key
     
 
-    def generate_signature(self, author_id: str, document: bytes, metadata: Metadata) -> bytes:
+    def generate_signature(self, author_id: str, document_hash: bytes, metadata: Metadata) -> bytes:
         """ Generate a signature for a document and its metadata """
         
         # Get the private key of the author
         _author, (_public_key, private_key) = self.authors[author_id]
-        # Concatenate document and metadata
-        document_and_metadata = document + metadata.to_json().encode()
+        # Concatenate document hash and metadata
+        blob = document_hash + metadata.to_json().encode()
         # Generate signature with the private key
-        signature = generate_signature(document_and_metadata, private_key)
+        signature = generate_signature(blob, private_key)
 
         return signature
 
 
-    def verify_document(self, document: bytes, metadata: Metadata, signature: bytes) -> bool:
+    def verify_document(self, document_hash: bytes, metadata: Metadata, signature: bytes) -> bool:
         """ Verify if a document's signature is valid """
 
         # Get the author id from the metadata
         author_id = metadata.author_id
         # Get the public key of the author
         public_key = self.get_public_key(author_id)
-        # Concatenate document and metadata
-        document_and_metadata = document + metadata.to_json().encode()
+        # Concatenate document hash and metadata into a blob
+        blob = document_hash + metadata.to_json().encode()
 
         # Verify the signature
-        is_valid = verify(document_and_metadata, signature, public_key)
+        is_valid = verify(blob, signature, public_key)
         return is_valid
+    
+
+    @staticmethod
+    def hash_document(document: bytes) -> bytes:
+        """ Hash a document """
+
+        hash = SHA256.new(document)
+        return hash.digest()
 
 
 if __name__ == '__main__':
@@ -160,8 +168,11 @@ if __name__ == '__main__':
         license='MIT'
     )
 
+    # The document is hashed
+    document_hash = provider.hash_document(document)
+
     # Author signs the document
-    signature = provider.generate_signature(author.id, document, metadata)
+    signature = provider.generate_signature(author.id, document_hash, metadata)
     print('Signature: ', signature.hex())
 
     # The metadata and the signature are either included in the document or pulished in a separate file
@@ -175,14 +186,18 @@ if __name__ == '__main__':
     # Realistically, you would extract the signature and metadata from the public document for verification
     # This would be implemented according to the specific file format of the document
 
+    document = b'Lorem ipsum dolor sit amet'
+
     # Verify the signature
-    is_valid = provider.verify_document(document, metadata, signature)
+    document_hash = provider.hash_document(document)
+    is_valid = provider.verify_document(document_hash, metadata, signature)
     print('Signature is valid' if is_valid else 'Signature is not valid')
 
 
     # Try to verify an altered document
     altered_document = b'Lorem ipsum dolor sit amet, consectetur adipiscing elit'
-    is_valid = provider.verify_document(altered_document, metadata, signature)
+    document_hash = provider.hash_document(altered_document)
+    is_valid = provider.verify_document(document_hash, metadata, signature)
     print('Signature is valid' if is_valid else 'Signature is not valid')
 
 
@@ -199,6 +214,7 @@ if __name__ == '__main__':
         license='MIT'
     )
 
-    is_valid = provider.verify_document(document, altered_metadata, signature)
+    document_hash = provider.hash_document(document)
+    is_valid = provider.verify_document(document_hash, altered_metadata, signature)
     print('Signature is valid' if is_valid else 'Signature is not valid')
 
